@@ -2,6 +2,9 @@ import express, { urlencoded } from "express";
 import type { Express, Request, Response } from "express";
 import cors from "cors";
 
+import { authenticationMiddleware } from "./middleware/auth.middleware";
+import { authRouter } from "./auth/auth.routes";
+
 export function createApplication(): Express {
   const app = express();
 
@@ -14,10 +17,13 @@ export function createApplication(): Express {
 
   app.use(express.json());
   app.use(urlencoded({ extended: true, limit: "5mb" }));
+  app.use(authenticationMiddleware());
 
   app.get("/health", (_: Request, res: Response) => {
     res.json({ message: "Welcome to the PulseBoard server!" });
   });
+
+  app.use("/api/auth", authRouter);
 
   return app;
 }
