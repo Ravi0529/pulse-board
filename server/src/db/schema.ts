@@ -100,6 +100,10 @@ export const responses = pgTable(
     index("responses_user_idx").on(table.userId),
     index("responses_submitted_idx").on(table.submittedAt),
     uniqueIndex("responses_poll_user_unique").on(table.pollId, table.userId),
+    uniqueIndex("responses_poll_anonymous_unique").on(
+      table.pollId,
+      table.anonymousIdentifier,
+    ),
   ],
 );
 

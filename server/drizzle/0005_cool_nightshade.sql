@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "responses_poll_anonymous_unique" ON "responses" USING btree ("poll_id","anonymous_identifier");
