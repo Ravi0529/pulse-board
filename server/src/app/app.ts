@@ -4,6 +4,7 @@ import cors from "cors";
 
 import { authenticationMiddleware } from "./middleware/auth.middleware";
 import { authRouter } from "./auth/auth.routes";
+import { pollRouter } from "./poll/poll.routes";
 
 export function createApplication(): Express {
   const app = express();
@@ -24,6 +25,7 @@ export function createApplication(): Express {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/poll", pollRouter);
 
   return app;
 }
