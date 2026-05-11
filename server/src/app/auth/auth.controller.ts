@@ -1,9 +1,10 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+
 import { signupSchema, signinSchema } from "./auth.schema";
 import { db } from "../../db";
 import { users } from "../../db/schema";
-import { eq } from "drizzle-orm";
 import { createUserToken } from "../utils/token";
 
 class AuthenticationController {
