@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "answers_response_question_unique" ON "answers" USING btree ("response_id","question_id");

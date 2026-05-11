@@ -121,6 +121,10 @@ export const answers = pgTable(
     index("answers_response_idx").on(table.responseId),
     index("answers_question_idx").on(table.questionId),
     index("answers_option_idx").on(table.optionId),
+    uniqueIndex("answers_response_question_unique").on(
+      table.responseId,
+      table.questionId,
+    ),
   ],
 );
 
