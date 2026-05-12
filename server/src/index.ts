@@ -1,12 +1,16 @@
 import "dotenv/config";
 import { createServer } from "node:http";
+
 import { createApplication } from "./app/app";
 import { env } from "./env";
+import { initializeSocket } from "./app/socket/socket";
 
 async function main() {
   try {
     const server = createServer(createApplication());
     const PORT: number = env.PORT ? +env.PORT : 8000;
+
+    initializeSocket(server);
 
     server.listen(PORT, () => {
       console.log(`The server is running on PORT: ${PORT}`);

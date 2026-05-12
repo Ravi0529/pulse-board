@@ -4,6 +4,7 @@ const envSchema = z.object({
   PORT: z.string().optional(),
   DATABASE_URL: z.string(),
   JWT_SECRET: z.string(),
+  REDIS_URL: z.string(),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {

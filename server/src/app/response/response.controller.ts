@@ -4,6 +4,11 @@ import { and, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { answers, polls, responses } from "../../db/schema";
 import { submitPollResponseSchema } from "./response.schema";
+import { getIO } from "../socket/socket";
+import {
+  incrementOptionVoteCount,
+  incrementPollResponseCount,
+} from "../redis/analytics.redis";
 
 type SubmitResponseParams = {
   pollId: string;
@@ -181,6 +186,18 @@ class ResponseController {
         await tx.insert(answers).values(answerValues);
 
         return response;
+      });
+
+      await incrementPollResponseCount(pollId);
+
+      for (const answer of submittedAnswers) {
+        await incrementOptionVoteCount(pollId, answer.optionId);
+      }
+
+      const io = getIO();
+
+      io.to(`poll:${pollId}`).emit("poll_response_update", {
+        pollId,
       });
 
       return res.status(201).json({
