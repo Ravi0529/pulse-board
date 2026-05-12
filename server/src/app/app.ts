@@ -6,6 +6,7 @@ import { authenticationMiddleware } from "./middleware/auth.middleware";
 import { authRouter } from "./auth/auth.routes";
 import { pollRouter } from "./poll/poll.routes";
 import { responseRouter } from "./response/response.routes";
+import { analyticsRouter } from "./analytics/analytics.routes";
 
 export function createApplication(): Express {
   const app = express();
@@ -28,6 +29,7 @@ export function createApplication(): Express {
   app.use("/api/auth", authRouter);
   app.use("/api/poll", pollRouter);
   app.use("/api/responses", responseRouter);
+  app.use("/api/analytics", analyticsRouter);
 
   return app;
 }

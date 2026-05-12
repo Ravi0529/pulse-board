@@ -6,6 +6,8 @@ import { answers, polls, responses } from "../../db/schema";
 import { submitPollResponseSchema } from "./response.schema";
 import { getIO } from "../socket/socket";
 import {
+  getOptionVoteCount,
+  getPollResponseCount,
   incrementOptionVoteCount,
   incrementPollResponseCount,
 } from "../redis/analytics.redis";
@@ -46,6 +48,10 @@ class ResponseController {
 
       if (!poll) {
         return res.status(404).json({ error: "Poll not found" });
+      }
+
+      if (poll.isPublished) {
+        return res.status(400).json({ error: "Poll is closed" });
       }
 
       const isExpired = new Date() > poll.expiresAt;
@@ -195,9 +201,27 @@ class ResponseController {
       }
 
       const io = getIO();
+      const totalResponses = await getPollResponseCount(pollId);
+      const liveQuestions = await Promise.all(
+        poll.questions.map(async (question) => {
+          const liveOptions = await Promise.all(
+            question.options.map(async (option) => ({
+              optionId: option.id,
+              votes: await getOptionVoteCount(pollId, option.id),
+            })),
+          );
+
+          return {
+            questionId: question.id,
+            options: liveOptions,
+          };
+        }),
+      );
 
       io.to(`poll:${pollId}`).emit("poll_response_update", {
         pollId,
+        totalResponses,
+        questions: liveQuestions,
       });
 
       return res.status(201).json({

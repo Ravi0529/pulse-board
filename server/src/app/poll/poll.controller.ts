@@ -165,7 +165,46 @@ class PollController {
         return res.status(404).json({ error: "Poll not found" });
       }
 
-      return res.status(200).json({ poll });
+      const isExpired = new Date() > poll.expiresAt;
+      let isPublished = poll.isPublished;
+
+      if (isExpired && !poll.isPublished) {
+        await db
+          .update(polls)
+          .set({
+            isPublished: true,
+          })
+          .where(eq(polls.id, pollId));
+
+        isPublished = true;
+      }
+
+      if (isPublished) {
+        return res.status(200).json({
+          poll: {
+            id: poll.id,
+            title: poll.title,
+            description: poll.description,
+            creatorId: poll.creatorId,
+            responseMode: poll.responseMode,
+            expiresAt: poll.expiresAt,
+            isPublished,
+            createdAt: poll.createdAt,
+            updatedAt: poll.updatedAt,
+            canVote: false,
+            analyticsAvailable: true,
+          },
+        });
+      }
+
+      return res.status(200).json({
+        poll: {
+          ...poll,
+          isPublished,
+          canVote: true,
+          analyticsAvailable: req.user?.id === poll.creatorId,
+        },
+      });
     } catch (error) {
       return res.status(500).json({ error: "Failed to fetch poll" });
     }
