@@ -14,10 +14,22 @@ pollRouter.post(
   pollController.handleCreatePoll.bind(pollController),
 );
 
-pollRouter.patch(
+pollRouter.put(
   "/:pollId",
   restrictToAuthenticatedUser(),
   pollController.handleUpdatePoll.bind(pollController),
+);
+
+pollRouter.delete(
+  "/:pollId/questions/:questionId/options/:optionId",
+  restrictToAuthenticatedUser(),
+  pollController.handleDeleteQuestionOption.bind(pollController),
+);
+
+pollRouter.delete(
+  "/:pollId/questions/:questionId",
+  restrictToAuthenticatedUser(),
+  pollController.handleDeletePollQuestion.bind(pollController),
 );
 
 pollRouter.delete(
