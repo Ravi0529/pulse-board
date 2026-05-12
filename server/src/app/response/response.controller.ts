@@ -55,9 +55,7 @@ class ResponseController {
             .where(eq(polls.id, poll.id));
         }
 
-        return res.status(400).json({
-          error: "Poll has expired",
-        });
+        return res.status(400).json({ error: "Poll has expired" });
       }
 
       if (poll.responseMode === "AUTHENTICATED" && !req.user) {
