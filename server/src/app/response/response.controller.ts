@@ -46,7 +46,18 @@ class ResponseController {
       const isExpired = new Date() > poll.expiresAt;
 
       if (isExpired) {
-        return res.status(400).json({ error: "Poll has expired" });
+        if (!poll.isPublished) {
+          await db
+            .update(polls)
+            .set({
+              isPublished: true,
+            })
+            .where(eq(polls.id, poll.id));
+        }
+
+        return res.status(400).json({
+          error: "Poll has expired",
+        });
       }
 
       if (poll.responseMode === "AUTHENTICATED" && !req.user) {

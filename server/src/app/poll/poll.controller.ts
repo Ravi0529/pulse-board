@@ -28,7 +28,6 @@ class PollController {
         parsed.data;
 
       const createdPoll = await db.transaction(async (tx) => {
-        // 1. Create Poll
         const [poll] = await tx
           .insert(polls)
           .values({
@@ -44,7 +43,6 @@ class PollController {
           throw new Error("Failed to create poll");
         }
 
-        // 2. Create Questions + Options
         for (const [questionIndex, currentQuestion] of questions.entries()) {
           const [createdQuestion] = await tx
             .insert(questionsTable)
@@ -226,7 +224,6 @@ class PollController {
       }
 
       const updatedPoll = await db.transaction(async (tx) => {
-        // 1. Update Poll
         const [poll] = await tx
           .update(polls)
           .set({
@@ -240,7 +237,6 @@ class PollController {
           .where(eq(polls.id, pollId))
           .returning();
 
-        // 2. Replace Questions + Options
         if (parsed.data.questions) {
           await tx
             .delete(questionsTable)
