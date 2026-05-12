@@ -28,13 +28,27 @@ class AuthenticationController {
 
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      await db.insert(users).values({
-        username,
-        email,
-        password: hashedPassword,
-      });
+      const [createdUser] = await db
+        .insert(users)
+        .values({
+          username,
+          email,
+          password: hashedPassword,
+        })
+        .returning({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          createdAt: users.createdAt,
+        });
 
-      return res.status(201).json({ message: "User Signed Up Successfully" });
+      if (!createdUser) {
+        return res.status(500).json({ error: "Signup failed" });
+      }
+
+      return res
+        .status(201)
+        .json({ message: "User Signed Up Successfully", user: createdUser });
     } catch (error) {
       return res.status(500).json({ error: "Signup failed" });
     }
@@ -72,11 +86,11 @@ class AuthenticationController {
 
       const token = createUserToken({
         id: user.id,
+        username: user.username,
+        email: user.email,
       });
 
-      return res
-        .status(200)
-        .json({ message: "Login Successful", token: token });
+      return res.status(200).json({ message: "Login Successful", token });
     } catch (error) {
       return res.status(500).json({ error: "Signin failed" });
     }

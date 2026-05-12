@@ -3,6 +3,8 @@ import { env } from "../../env";
 
 export interface UserTokenPayload {
   id: string;
+  username: string;
+  email: string;
 }
 
 export function createUserToken(payload: UserTokenPayload) {

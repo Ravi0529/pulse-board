@@ -21,14 +21,14 @@ export function authenticationMiddleware() {
       });
     }
 
-    const user = verifyUserToken(token);
+    const tokenPayload = verifyUserToken(token);
 
-    if (!user) {
+    if (!tokenPayload) {
       return next();
     }
 
     // @ts-ignore
-    req.user = user;
+    req.user = tokenPayload;
 
     next();
   };
