@@ -10,13 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PollPollIdRouteImport } from './routes/(app)/poll.$pollId.tsx'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as appWorkspaceRouteImport } from './routes/(app)/workspace'
+import { Route as appWorkspaceIndexRouteImport } from './routes/(app)/workspace.index'
+import { Route as appWorkspaceCreateRouteImport } from './routes/(app)/workspace.create'
+import { Route as appWorkspacePollIdRouteImport } from './routes/(app)/workspace.$pollId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PollPollIdRoute = PollPollIdRouteImport.update({
+  id: '/poll/$pollId',
+  path: '/poll/$pollId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authSignupRoute = authSignupRouteImport.update({
@@ -34,39 +43,90 @@ const appWorkspaceRoute = appWorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const appWorkspaceIndexRoute = appWorkspaceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => appWorkspaceRoute,
+} as any)
+const appWorkspaceCreateRoute = appWorkspaceCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => appWorkspaceRoute,
+} as any)
+const appWorkspacePollIdRoute = appWorkspacePollIdRouteImport.update({
+  id: '/$pollId',
+  path: '/$pollId',
+  getParentRoute: () => appWorkspaceRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/workspace': typeof appWorkspaceRoute
+  '/workspace': typeof appWorkspaceRouteWithChildren
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupRoute
+  '/poll/$pollId': typeof PollPollIdRoute
+  '/workspace/$pollId': typeof appWorkspacePollIdRoute
+  '/workspace/create': typeof appWorkspaceCreateRoute
+  '/workspace/': typeof appWorkspaceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/workspace': typeof appWorkspaceRoute
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupRoute
+  '/poll/$pollId': typeof PollPollIdRoute
+  '/workspace/$pollId': typeof appWorkspacePollIdRoute
+  '/workspace/create': typeof appWorkspaceCreateRoute
+  '/workspace': typeof appWorkspaceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/(app)/workspace': typeof appWorkspaceRoute
+  '/(app)/workspace': typeof appWorkspaceRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/signup': typeof authSignupRoute
+  '/poll/$pollId': typeof PollPollIdRoute
+  '/(app)/workspace/$pollId': typeof appWorkspacePollIdRoute
+  '/(app)/workspace/create': typeof appWorkspaceCreateRoute
+  '/(app)/workspace/': typeof appWorkspaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/workspace' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/workspace'
+    | '/login'
+    | '/signup'
+    | '/poll/$pollId'
+    | '/workspace/$pollId'
+    | '/workspace/create'
+    | '/workspace/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/workspace' | '/login' | '/signup'
-  id: '__root__' | '/' | '/(app)/workspace' | '/(auth)/login' | '/(auth)/signup'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/poll/$pollId'
+    | '/workspace/$pollId'
+    | '/workspace/create'
+    | '/workspace'
+  id:
+    | '__root__'
+    | '/'
+    | '/(app)/workspace'
+    | '/(auth)/login'
+    | '/(auth)/signup'
+    | '/poll/$pollId'
+    | '/(app)/workspace/$pollId'
+    | '/(app)/workspace/create'
+    | '/(app)/workspace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  appWorkspaceRoute: typeof appWorkspaceRoute
+  appWorkspaceRoute: typeof appWorkspaceRouteWithChildren
   authLoginRoute: typeof authLoginRoute
   authSignupRoute: typeof authSignupRoute
+  PollPollIdRoute: typeof PollPollIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,6 +136,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/poll/$pollId': {
+      id: '/poll/$pollId'
+      path: '/poll/$pollId'
+      fullPath: '/poll/$pollId'
+      preLoaderRoute: typeof PollPollIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/signup': {
@@ -99,14 +166,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appWorkspaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(app)/workspace/': {
+      id: '/(app)/workspace/'
+      path: '/'
+      fullPath: '/workspace/'
+      preLoaderRoute: typeof appWorkspaceIndexRouteImport
+      parentRoute: typeof appWorkspaceRoute
+    }
+    '/(app)/workspace/create': {
+      id: '/(app)/workspace/create'
+      path: '/create'
+      fullPath: '/workspace/create'
+      preLoaderRoute: typeof appWorkspaceCreateRouteImport
+      parentRoute: typeof appWorkspaceRoute
+    }
+    '/(app)/workspace/$pollId': {
+      id: '/(app)/workspace/$pollId'
+      path: '/$pollId'
+      fullPath: '/workspace/$pollId'
+      preLoaderRoute: typeof appWorkspacePollIdRouteImport
+      parentRoute: typeof appWorkspaceRoute
+    }
   }
 }
 
+interface appWorkspaceRouteChildren {
+  appWorkspacePollIdRoute: typeof appWorkspacePollIdRoute
+  appWorkspaceCreateRoute: typeof appWorkspaceCreateRoute
+  appWorkspaceIndexRoute: typeof appWorkspaceIndexRoute
+}
+
+const appWorkspaceRouteChildren: appWorkspaceRouteChildren = {
+  appWorkspacePollIdRoute: appWorkspacePollIdRoute,
+  appWorkspaceCreateRoute: appWorkspaceCreateRoute,
+  appWorkspaceIndexRoute: appWorkspaceIndexRoute,
+}
+
+const appWorkspaceRouteWithChildren = appWorkspaceRoute._addFileChildren(
+  appWorkspaceRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  appWorkspaceRoute: appWorkspaceRoute,
+  appWorkspaceRoute: appWorkspaceRouteWithChildren,
   authLoginRoute: authLoginRoute,
   authSignupRoute: authSignupRoute,
+  PollPollIdRoute: PollPollIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

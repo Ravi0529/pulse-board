@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 
 import { isAuthenticated } from '@/services/authSession'
 
@@ -8,9 +8,9 @@ export const Route = createFileRoute('/(app)/workspace')({
       throw redirect({ to: '/login' })
     }
   },
-  component: RouteComponent,
+  component: WorkspaceLayout,
 })
 
-function RouteComponent() {
-  return <div>Hello "/(app)/workspace"!</div>
+function WorkspaceLayout() {
+  return <Outlet />
 }

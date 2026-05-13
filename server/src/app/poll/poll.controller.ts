@@ -149,6 +149,7 @@ class PollController {
         where: eq(polls.id, pollId),
 
         with: {
+          creator: true,
           questions: {
             orderBy: (questions, { asc }) => [asc(questions.order)],
 
@@ -186,6 +187,13 @@ class PollController {
             title: poll.title,
             description: poll.description,
             creatorId: poll.creatorId,
+            creator: poll.creator
+              ? {
+                  id: poll.creator.id,
+                  username: poll.creator.username,
+                  email: poll.creator.email,
+                }
+              : null,
             responseMode: poll.responseMode,
             expiresAt: poll.expiresAt,
             isPublished,
@@ -200,6 +208,13 @@ class PollController {
       return res.status(200).json({
         poll: {
           ...poll,
+          creator: poll.creator
+            ? {
+                id: poll.creator.id,
+                username: poll.creator.username,
+                email: poll.creator.email,
+              }
+            : null,
           isPublished,
           canVote: true,
           analyticsAvailable: req.user?.id === poll.creatorId,
