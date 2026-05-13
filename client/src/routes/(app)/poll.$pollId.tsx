@@ -11,7 +11,7 @@ import {
 import { pollService } from '@/services/pollServices'
 import type { Poll } from '@/services/pollServices'
 
-export const Route = createFileRoute('/poll/$pollId')({
+export const Route = createFileRoute('/(app)/poll/$pollId')({
   component: PublicPollPlaceholderPage,
 })
 

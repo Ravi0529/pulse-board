@@ -10,22 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PollPollIdRouteImport } from './routes/(app)/poll.$pollId.tsx'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as appWorkspaceRouteImport } from './routes/(app)/workspace'
 import { Route as appWorkspaceIndexRouteImport } from './routes/(app)/workspace.index'
 import { Route as appWorkspaceCreateRouteImport } from './routes/(app)/workspace.create'
 import { Route as appWorkspacePollIdRouteImport } from './routes/(app)/workspace.$pollId'
+import { Route as appPollPollIdRouteImport } from './routes/(app)/poll.$pollId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PollPollIdRoute = PollPollIdRouteImport.update({
-  id: '/poll/$pollId',
-  path: '/poll/$pollId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authSignupRoute = authSignupRouteImport.update({
@@ -58,13 +53,18 @@ const appWorkspacePollIdRoute = appWorkspacePollIdRouteImport.update({
   path: '/$pollId',
   getParentRoute: () => appWorkspaceRoute,
 } as any)
+const appPollPollIdRoute = appPollPollIdRouteImport.update({
+  id: '/(app)/poll/$pollId',
+  path: '/poll/$pollId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/workspace': typeof appWorkspaceRouteWithChildren
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupRoute
-  '/poll/$pollId': typeof PollPollIdRoute
+  '/poll/$pollId': typeof appPollPollIdRoute
   '/workspace/$pollId': typeof appWorkspacePollIdRoute
   '/workspace/create': typeof appWorkspaceCreateRoute
   '/workspace/': typeof appWorkspaceIndexRoute
@@ -73,7 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupRoute
-  '/poll/$pollId': typeof PollPollIdRoute
+  '/poll/$pollId': typeof appPollPollIdRoute
   '/workspace/$pollId': typeof appWorkspacePollIdRoute
   '/workspace/create': typeof appWorkspaceCreateRoute
   '/workspace': typeof appWorkspaceIndexRoute
@@ -84,7 +84,7 @@ export interface FileRoutesById {
   '/(app)/workspace': typeof appWorkspaceRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/signup': typeof authSignupRoute
-  '/poll/$pollId': typeof PollPollIdRoute
+  '/(app)/poll/$pollId': typeof appPollPollIdRoute
   '/(app)/workspace/$pollId': typeof appWorkspacePollIdRoute
   '/(app)/workspace/create': typeof appWorkspaceCreateRoute
   '/(app)/workspace/': typeof appWorkspaceIndexRoute
@@ -115,7 +115,7 @@ export interface FileRouteTypes {
     | '/(app)/workspace'
     | '/(auth)/login'
     | '/(auth)/signup'
-    | '/poll/$pollId'
+    | '/(app)/poll/$pollId'
     | '/(app)/workspace/$pollId'
     | '/(app)/workspace/create'
     | '/(app)/workspace/'
@@ -126,7 +126,7 @@ export interface RootRouteChildren {
   appWorkspaceRoute: typeof appWorkspaceRouteWithChildren
   authLoginRoute: typeof authLoginRoute
   authSignupRoute: typeof authSignupRoute
-  PollPollIdRoute: typeof PollPollIdRoute
+  appPollPollIdRoute: typeof appPollPollIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,13 +136,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/poll/$pollId': {
-      id: '/poll/$pollId'
-      path: '/poll/$pollId'
-      fullPath: '/poll/$pollId'
-      preLoaderRoute: typeof PollPollIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/signup': {
@@ -187,6 +180,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appWorkspacePollIdRouteImport
       parentRoute: typeof appWorkspaceRoute
     }
+    '/(app)/poll/$pollId': {
+      id: '/(app)/poll/$pollId'
+      path: '/poll/$pollId'
+      fullPath: '/poll/$pollId'
+      preLoaderRoute: typeof appPollPollIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -211,7 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   appWorkspaceRoute: appWorkspaceRouteWithChildren,
   authLoginRoute: authLoginRoute,
   authSignupRoute: authSignupRoute,
-  PollPollIdRoute: PollPollIdRoute,
+  appPollPollIdRoute: appPollPollIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
