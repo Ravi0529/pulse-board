@@ -6,6 +6,7 @@ import {
   Clock3,
   FilePlus2,
   Layers3,
+  LogOut,
   MessageSquareQuote,
   ShieldAlert,
   UserRound,
@@ -30,6 +31,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { getStoredUser } from '@/services/authSession'
+import { authService } from '@/services/authServices'
 import { pollService } from '@/services/pollServices'
 import type { Poll } from '@/services/pollServices'
 
@@ -42,6 +44,7 @@ function WorkspacePage() {
   const user = getStoredUser()
   const [polls, setPolls] = useState<Poll[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -86,6 +89,24 @@ function WorkspacePage() {
   )
 
   const livePolls = polls.filter((poll) => !poll.isPublished).length
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      setErrorMessage(null)
+
+      await authService.logout()
+      await navigate({ to: '/login' })
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong while logging you out.',
+      )
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <div className="dark min-h-screen overflow-hidden bg-zinc-950 text-zinc-50">
@@ -204,6 +225,16 @@ function WorkspacePage() {
                         : 'No polls yet. Your first one will appear here.'
                   }
                 />
+                <Button
+                  className="w-full border-red-400/25 bg-red-400/5 text-red-200 hover:bg-red-400/10"
+                  disabled={isLoggingOut}
+                  type="button"
+                  variant="outline"
+                  onClick={() => void handleLogout()}
+                >
+                  <LogOut className="size-4" />
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </Button>
               </CardContent>
             </Card>
           </section>
