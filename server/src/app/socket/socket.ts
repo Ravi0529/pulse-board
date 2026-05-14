@@ -16,7 +16,9 @@ export function initializeSocket(httpServer: HttpServer) {
     },
   });
 
-  const pubClient = new Redis(env.REDIS_URL);
+  const pubClient = new Redis(env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+  });
 
   const subClient = pubClient.duplicate();
 
