@@ -280,12 +280,19 @@ function WorkspacePage() {
                       <Card
                         key={poll.id}
                         className="cursor-pointer border border-white/10 bg-zinc-950/55 transition hover:border-cyan-400/30 hover:bg-zinc-950/70"
-                        onClick={() =>
-                          void navigate({
-                            to: '/workspace/$pollId',
-                            params: { pollId: poll.id },
-                          })
-                        }
+                        onClick={() => {
+                          if (poll.isPublished) {
+                            void navigate({
+                              to: '/poll/$pollId',
+                              params: { pollId: poll.id },
+                            })
+                          } else {
+                            void navigate({
+                              to: '/workspace/$pollId',
+                              params: { pollId: poll.id },
+                            })
+                          }
+                        }}
                       >
                         <CardHeader className="space-y-3 px-4 pt-4">
                           <div className="flex flex-wrap items-start justify-between gap-3">
