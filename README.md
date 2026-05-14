@@ -37,7 +37,6 @@ A real-time polling and feedback platform where creators launch polls, share lin
 - [API Reference](#-api-reference)
 - [WebSocket Events](#-websocket-events)
 - [Contributing](#-contributing)
-- [License](#-license)
 
 ---
 
