@@ -94,16 +94,24 @@ export function PollVotingView({
 
                   <div className="grid gap-3">
                     {question.options.map((option) => {
-                      const liveVoteCount =
-                        analytics?.questions
-                          .find(
-                            (analyticsQuestion) =>
-                              analyticsQuestion.questionId === question.id,
+                      const analyticsQuestion = analytics
+                        ? analytics.questions.find(
+                            (aq) => aq.questionId === question.id,
                           )
-                          ?.options.find(
-                            (analyticsOption) =>
-                              analyticsOption.optionId === option.id,
-                          )?.votes ?? liveVotes[question.id][option.id]
+                        : undefined
+
+                      const analyticsVotes = analyticsQuestion
+                        ? analyticsQuestion.options.find(
+                            (ao) => ao.optionId === option.id,
+                          )?.votes
+                        : undefined
+
+                      const liveVotesBucket = liveVotes[question.id] as
+                        | Record<string, number>
+                        | undefined
+
+                      const liveVoteCount =
+                        analyticsVotes ?? liveVotesBucket?.[option.id] ?? 0
 
                       return (
                         <button

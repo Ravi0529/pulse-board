@@ -24,6 +24,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { DateTimePicker24h } from '@/components/DateTimePicker'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -83,6 +84,7 @@ function CreatePollPage() {
   } = form
 
   const selectedResponseMode = watch('responseMode')
+  const selectedExpiryAt = watch('expiresAt')
 
   const {
     fields: questionFields,
@@ -214,18 +216,26 @@ function CreatePollPage() {
                       error={errors.expiresAt?.message}
                       icon={<CalendarClock className="size-4" />}
                     >
-                      <Input
-                        aria-invalid={Boolean(errors.expiresAt)}
-                        className="h-12 border-white/10 bg-zinc-950/70 pl-12 pr-3 text-sm text-zinc-100 scheme-dark [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100 focus-visible:border-cyan-400/60 focus-visible:ring-cyan-400/20"
-                        min={minExpiryAt}
-                        step={60}
-                        type="datetime-local"
+                      <input
+                        type="hidden"
                         {...register('expiresAt', {
                           required: 'Expiry date and time are required',
                           validate: (value) =>
                             new Date(value).getTime() > Date.now() ||
                             'Expiry date must be in the future',
                         })}
+                      />
+                      <DateTimePicker24h
+                        value={selectedExpiryAt}
+                        min={minExpiryAt}
+                        onChange={(value) =>
+                          setValue('expiresAt', value, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          })
+                        }
+                        className="pl-12"
                       />
                     </FormBlock>
                   </div>

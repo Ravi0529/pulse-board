@@ -23,6 +23,7 @@ import {
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -30,6 +31,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { DateTimePicker24h } from '@/components/DateTimePicker'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -78,6 +80,7 @@ function PollWorkspacePage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const form = useForm<PollEditorFormValues>({
     defaultValues: {
@@ -110,6 +113,7 @@ function PollWorkspacePage() {
   })
 
   const selectedResponseMode = watch('responseMode')
+  const selectedExpiryAt = watch('expiresAt')
 
   const responseModeCopy = useMemo(
     () => ({
@@ -208,9 +212,7 @@ function PollWorkspacePage() {
   }
 
   const handleDeletePoll = async () => {
-    if (!window.confirm('Delete this poll permanently?')) {
-      return
-    }
+    setShowDeleteDialog(false)
 
     try {
       setIsDeleting(true)
@@ -306,7 +308,7 @@ function PollWorkspacePage() {
                       disabled={isDeleting}
                       type="button"
                       variant="outline"
-                      onClick={() => void handleDeletePoll()}
+                      onClick={() => setShowDeleteDialog(true)}
                     >
                       <Trash2 className="size-4" />
                       Delete poll
@@ -386,18 +388,26 @@ function PollWorkspacePage() {
                       error={errors.expiresAt?.message}
                       icon={<CalendarClock className="size-4" />}
                     >
-                      <Input
-                        aria-invalid={Boolean(errors.expiresAt)}
-                        className="h-12 border-white/10 bg-zinc-950/70 pl-12 pr-3 text-sm text-zinc-100 scheme-dark [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100 focus-visible:border-cyan-400/60 focus-visible:ring-cyan-400/20"
-                        min={getMinDateTime()}
-                        step={60}
-                        type="datetime-local"
+                      <input
+                        type="hidden"
                         {...register('expiresAt', {
                           required: 'Expiry date and time are required',
                           validate: (value) =>
                             new Date(value).getTime() > Date.now() ||
                             'Expiry date must be in the future',
                         })}
+                      />
+                      <DateTimePicker24h
+                        value={selectedExpiryAt}
+                        min={getMinDateTime()}
+                        onChange={(value) =>
+                          setValue('expiresAt', value, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          })
+                        }
+                        className="pl-12"
                       />
                     </FormBlock>
                   </div>
@@ -603,6 +613,38 @@ function PollWorkspacePage() {
               onClick={() => setErrorMessage(null)}
             >
               Close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => !open && setShowDeleteDialog(false)}
+      >
+        <AlertDialogContent className="border border-red-400/20 bg-zinc-900 text-zinc-50">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-red-400/10 text-red-300">
+              <Trash2 className="size-5" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete this poll?</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              This action is permanent and cannot be undone. All questions,
+              options, and collected responses will be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="border-white/10 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-zinc-50"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 text-white hover:bg-red-400"
+              onClick={() => void handleDeletePoll()}
+            >
+              Delete permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
