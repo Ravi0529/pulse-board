@@ -419,7 +419,7 @@ function PollWorkspacePage() {
                   >
                     <textarea
                       aria-invalid={Boolean(errors.description)}
-                      className="min-h-32 w-full border border-white/10 bg-zinc-950/70 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-400/60 focus:outline-none focus:ring-4 focus:ring-cyan-400/20"
+                      className="min-h-32 w-full border border-white/10 bg-zinc-950/70 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-400/60 focus:outline-none focus:ring-4 focus:ring-cyan-400/20 pl-12"
                       {...register('description', {
                         maxLength: {
                           value: 2000,
@@ -657,10 +657,8 @@ function EditableQuestionCard({
   control,
   errors,
   index,
-  pollId,
   register,
   removeQuestion,
-  onPollSync,
 }: {
   control: ReturnType<typeof useForm<PollEditorFormValues>>['control']
   errors: ReturnType<
@@ -682,7 +680,6 @@ function EditableQuestionCard({
   })
 
   const questionError = errors.questions?.[index]
-  const questionId = questionError ? undefined : undefined
 
   return (
     <Card className="border border-white/10 bg-zinc-950/55">
