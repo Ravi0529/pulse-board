@@ -63,7 +63,7 @@ export const responseService = {
   ): Promise<PollResponseRecord> {
     try {
       const { data } = await api.post<SubmitPollResponseApiResponse>(
-        `/response/${pollId}/respond`,
+        `/responses/${pollId}/respond`,
         input,
       )
 

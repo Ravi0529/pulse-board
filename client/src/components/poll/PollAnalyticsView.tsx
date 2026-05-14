@@ -35,7 +35,6 @@ interface PollAnalyticsViewProps {
 
 export function PollAnalyticsView({
   analytics,
-  creatorName,
   shareUrl,
   timeLeftMs,
   onCopyLink,
@@ -49,7 +48,7 @@ export function PollAnalyticsView({
               <CardTitle className="text-white">
                 {analytics?.isPublished
                   ? 'Public results'
-                  : `Creator analytics for ${creatorName}`}
+                  : `Creator analytics`}
               </CardTitle>
               <CardDescription className="text-zinc-400">
                 {analytics?.isPublished

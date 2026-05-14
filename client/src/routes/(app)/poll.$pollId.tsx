@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Clock3,
-  Copy,
   ShieldAlert,
   UserRound,
 } from 'lucide-react'
@@ -35,11 +34,9 @@ import {
   formatTimeLeft,
   MetaTile,
   PollShell,
-  SideInfo,
 } from '@/components/poll/poll-shared'
 import type { LiveVotesMap, VoteMap } from '@/components/poll/poll-shared'
 import { PollVotingView } from '@/components/poll/PollVotingView'
-import type { CarouselApi } from '@/components/ui/carousel'
 import { api } from '@/services/api'
 import { analyticsService } from '@/services/analyticsServices'
 import type { PollAnalytics } from '@/services/analyticsServices'
@@ -48,6 +45,57 @@ import { authService } from '@/services/authServices'
 import { pollService } from '@/services/pollServices'
 import type { Poll } from '@/services/pollServices'
 import { responseService } from '@/services/responseServices'
+
+type RealtimePollPayload = {
+  pollId: string
+  totalResponses: number
+  questions: Array<{
+    questionId: string
+    options: Array<{ optionId: string; votes: number }>
+  }>
+}
+
+function mergeAnalyticsWithRealtime(
+  currentAnalytics: PollAnalytics | null,
+  payload: RealtimePollPayload,
+): PollAnalytics | null {
+  if (!currentAnalytics || currentAnalytics.pollId !== payload.pollId) {
+    return currentAnalytics
+  }
+
+  return {
+    ...currentAnalytics,
+    totalResponses: payload.totalResponses,
+    questions: currentAnalytics.questions.map((question) => {
+      const liveQuestion = payload.questions.find(
+        (payloadQuestion) => payloadQuestion.questionId === question.questionId,
+      )
+
+      if (!liveQuestion) {
+        return question
+      }
+
+      return {
+        ...question,
+        options: question.options.map((option) => {
+          const liveOption = liveQuestion.options.find(
+            (payloadOption) => payloadOption.optionId === option.optionId,
+          )
+          const votes = liveOption?.votes ?? option.votes
+
+          return {
+            ...option,
+            votes,
+            percentage:
+              payload.totalResponses === 0
+                ? 0
+                : Number(((votes / payload.totalResponses) * 100).toFixed(2)),
+          }
+        }),
+      }
+    }),
+  }
+}
 
 export const Route = createFileRoute('/(app)/poll/$pollId')({
   component: PollPage,
@@ -66,8 +114,6 @@ function PollPage() {
   const [anonymousReady, setAnonymousReady] = useState(false)
   const [liveVotes, setLiveVotes] = useState<LiveVotesMap>({})
   const [liveTotalResponses, setLiveTotalResponses] = useState(0)
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -182,7 +228,7 @@ function PollPage() {
   }, [poll, showAnalyticsView])
 
   useEffect(() => {
-    if (!poll || showAnalyticsView) return
+    if (!poll) return
 
     const socketBaseUrl = new URL(
       api.defaults.baseURL || 'http://localhost:8000/api',
@@ -197,40 +243,28 @@ function PollPage() {
       socket.emit('join_poll', poll.id)
     })
 
-    socket.on(
-      'poll_response_update',
-      (payload: {
-        pollId: string
-        totalResponses: number
-        questions: Array<{
-          questionId: string
-          options: Array<{ optionId: string; votes: number }>
-        }>
-      }) => {
-        if (payload.pollId !== poll.id) return
+    socket.on('poll_response_update', (payload: RealtimePollPayload) => {
+      if (payload.pollId !== poll.id) return
 
-        setLiveTotalResponses(payload.totalResponses)
-        setLiveVotes(
-          Object.fromEntries(
-            payload.questions.map((question) => [
-              question.questionId,
-              Object.fromEntries(
-                question.options.map((option) => [
-                  option.optionId,
-                  option.votes,
-                ]),
-              ),
-            ]),
-          ),
-        )
-      },
-    )
+      setLiveTotalResponses(payload.totalResponses)
+      setLiveVotes(
+        Object.fromEntries(
+          payload.questions.map((question) => [
+            question.questionId,
+            Object.fromEntries(
+              question.options.map((option) => [option.optionId, option.votes]),
+            ),
+          ]),
+        ),
+      )
+      setAnalytics((current) => mergeAnalyticsWithRealtime(current, payload))
+    })
 
     return () => {
       socket.emit('leave_poll', poll.id)
       socket.disconnect()
     }
-  }, [poll, showAnalyticsView])
+  }, [poll])
 
   useEffect(() => {
     if (!showResultNotice) return
@@ -243,22 +277,6 @@ function PollPage() {
       window.clearTimeout(timeout)
     }
   }, [showResultNotice])
-
-  useEffect(() => {
-    if (!carouselApi) return
-
-    const updateIndex = () => {
-      setCurrentQuestionIndex(carouselApi.selectedScrollSnap())
-    }
-
-    updateIndex()
-    carouselApi.on('select', updateIndex)
-    carouselApi.on('reInit', updateIndex)
-
-    return () => {
-      carouselApi.off('select', updateIndex)
-    }
-  }, [carouselApi])
 
   useEffect(() => {
     if (
@@ -298,9 +316,6 @@ function PollPage() {
       ? `/poll/${pollId}`
       : `${window.location.origin}/poll/${pollId}`
 
-  const currentQuestion = poll?.questions[currentQuestionIndex] || null
-  const currentAnswer = currentQuestion ? votes[currentQuestion.id] : undefined
-
   const blockedAuthenticatedOnAnonymous = Boolean(
     poll &&
     isAnonymousPoll &&
@@ -330,13 +345,6 @@ function PollPage() {
       (isAnonymousPoll && !authenticated && anonymousReady)),
   )
 
-  const hasSubmittedAllRequiredAnswers = Boolean(
-    poll &&
-    poll.questions
-      .filter((question) => question.required)
-      .every((question) => Boolean(votes[question.id])),
-  )
-
   const handleAnonymousStart = () => {
     if (anonymousName.trim().length < 2) {
       setErrorMessage('Please enter your name before continuing.')
@@ -354,36 +362,37 @@ function PollPage() {
     }))
   }
 
-  const handleAdvanceQuestion = async () => {
-    if (!poll || !currentQuestion) return
+  const handleSubmitPoll = async () => {
+    if (!poll) return
 
-    if (currentQuestion.required && !currentAnswer) {
-      setErrorMessage('Please choose an option before continuing.')
+    const missingRequired = poll.questions.filter(
+      (question) => question.required && !votes[question.id],
+    )
+
+    if (missingRequired.length > 0) {
+      setErrorMessage('Please answer all required questions before submitting.')
+      return
+    }
+
+    const answers = poll.questions
+      .filter((question) => Boolean(votes[question.id]))
+      .map((question) => ({
+        questionId: question.id,
+        optionId: votes[question.id],
+      }))
+
+    if (answers.length === 0) {
+      setErrorMessage('Pick at least one answer before submitting.')
       return
     }
 
     setErrorMessage(null)
 
-    const isLastQuestion = currentQuestionIndex === poll.questions.length - 1
-
-    if (!isLastQuestion) {
-      carouselApi?.scrollNext()
-      return
-    }
-
-    if (!hasSubmittedAllRequiredAnswers) {
-      setErrorMessage('Please answer all required questions before submitting.')
-      return
-    }
-
     try {
       setIsSubmitting(true)
       await responseService.submitPollResponse(poll.id, {
         anonymousIdentifier: isAnonymousPoll ? anonymousName.trim() : undefined,
-        answers: Object.entries(votes).map(([questionId, optionId]) => ({
-          questionId,
-          optionId,
-        })),
+        answers,
       })
 
       setHasSubmitted(true)
@@ -574,14 +583,12 @@ function PollPage() {
           ) : canVote ? (
             <PollVotingView
               analytics={analytics}
-              carouselApi={carouselApi}
-              currentQuestionIndex={currentQuestionIndex}
               isSubmitting={isSubmitting}
+              liveTotalResponses={liveTotalResponses}
               liveVotes={liveVotes}
-              onAdvance={() => void handleAdvanceQuestion()}
               onSelectOption={handleSelectOption}
+              onSubmit={() => void handleSubmitPoll()}
               poll={poll}
-              setCarouselApi={setCarouselApi}
               timeLeftMs={timeLeftMs}
               votes={votes}
             />
@@ -592,58 +599,6 @@ function PollPage() {
             />
           )}
         </section>
-
-        <aside className="space-y-6">
-          <Card className="border border-white/10 bg-zinc-900/75 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="font-heading text-base leading-relaxed text-white">
-                Poll Pulse
-              </CardTitle>
-              <CardDescription className="text-sm leading-6 text-zinc-400">
-                Keep this link. This same page becomes the results screen after
-                the poll expires.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <SideInfo
-                label="Creator"
-                value={poll.creator?.username || 'Unknown creator'}
-              />
-              <SideInfo label="Share link" value={shareUrl} mono />
-              <SideInfo
-                label="When results unlock"
-                value={
-                  poll.isPublished || isExpired
-                    ? 'Results are public now'
-                    : `${formatTimeLeft(timeLeftMs)} remaining`
-                }
-              />
-              <Button
-                className="w-full border-cyan-400/25 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
-                type="button"
-                variant="outline"
-                onClick={() => void handleCopyLink()}
-              >
-                <Copy className="size-4" />
-                Copy link
-              </Button>
-            </CardContent>
-          </Card>
-
-          {!showAnalyticsView ? (
-            <Card className="border border-white/10 bg-zinc-900/75 backdrop-blur-xl">
-              <CardHeader>
-                <CardTitle className="font-heading text-base leading-relaxed text-white">
-                  Voting notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm leading-6 text-zinc-300">
-                <p>Use the carousel to move through one question at a time.</p>
-                <p>Required questions must be answered before submission.</p>
-              </CardContent>
-            </Card>
-          ) : null}
-        </aside>
       </div>
 
       <AlertDialog open={showResultNotice} onOpenChange={setShowResultNotice}>
