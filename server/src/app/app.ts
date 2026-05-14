@@ -16,7 +16,7 @@ export function createApplication(): Express {
       origin: [
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://pulse-board-3r5r.onrender.com/",
+        "https://pulse-board-3r5r.onrender.com",
       ],
       credentials: true,
     }),
