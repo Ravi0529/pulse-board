@@ -64,7 +64,7 @@ export function PollVotingView({
                   Question {index + 1} of {poll.questions.length} ·{' '}
                   {question.required ? 'Required' : 'Optional'}
                 </div>
-                <h2 className="text-2xl leading-tight text-white">
+                <h2 className="text-xl leading-tight text-white">
                   {question.question}
                 </h2>
               </div>

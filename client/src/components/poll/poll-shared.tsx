@@ -72,11 +72,15 @@ export function SideInfo({
 
 export function PollShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="dark min-h-screen overflow-hidden bg-zinc-950 px-4 py-10 text-zinc-50 sm:px-6 lg:px-10">
-      <div className="relative mx-auto max-w-7xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.12),transparent_30%),linear-gradient(160deg,#09090b_0%,#111827_45%,#0f172a_100%)]" />
+    <div className="dark min-h-screen overflow-hidden bg-zinc-950 text-zinc-50">
+      <div className="relative isolate min-h-screen">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.14),transparent_30%),linear-gradient(160deg,#09090b_0%,#111827_45%,#0f172a_100%)]" />
         <div className="absolute inset-0 opacity-30 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-size-[32px_32px]" />
-        <div className="relative">{children}</div>
+        <div className="absolute inset-0 opacity-12 bg-[linear-gradient(45deg,rgba(34,211,238,0.18)_25%,transparent_25%,transparent_50%,rgba(34,211,238,0.18)_50%,rgba(34,211,238,0.18)_75%,transparent_75%,transparent)] bg-size-[18px_18px]" />
+        <div className="absolute left-1/2 top-16 h-40 w-40 -translate-x-1/2 bg-cyan-400/20 blur-3xl animate-pulse sm:top-24 sm:h-56 sm:w-56" />
+        <main className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-10 lg:px-10">
+          {children}
+        </main>
       </div>
     </div>
   )

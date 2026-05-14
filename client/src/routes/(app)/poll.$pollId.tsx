@@ -435,11 +435,25 @@ function PollPage() {
   if (isLoading) {
     return (
       <PollShell>
-        <Card className="border border-white/10 bg-zinc-900/85">
-          <CardContent className="p-10 text-center text-zinc-400">
-            Loading poll...
-          </CardContent>
-        </Card>
+        <div className="mx-auto w-full max-w-4xl">
+          <Card className="border border-white/10 bg-zinc-900/85 backdrop-blur-xl">
+            <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+              <div className="relative mb-6">
+                <div className="h-16 w-16 rounded-full border-4 border-cyan-400/20" />
+                <div className="absolute left-0 top-0 h-16 w-16 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent" />
+              </div>
+
+              <div className="space-y-2">
+                <p className="animate-pulse text-base text-cyan-200">
+                  Loading poll...
+                </p>
+                <p className="text-sm text-zinc-500">
+                  Please wait while we fetch the details
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </PollShell>
     )
   }
@@ -457,7 +471,7 @@ function PollPage() {
 
   return (
     <PollShell>
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="mx-auto w-full max-w-3xl">
         <section className="space-y-6">
           <Card className="border border-white/10 bg-zinc-900/85 shadow-xl shadow-cyan-950/25 backdrop-blur-xl">
             <CardHeader className="space-y-4">
