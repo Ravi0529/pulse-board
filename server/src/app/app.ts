@@ -13,7 +13,11 @@ export function createApplication(): Express {
 
   app.use(
     cors({
-      origin: ["http://localhost:5173", "http://localhost:3000"],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://pulse-board-3r5r.onrender.com/",
+      ],
       credentials: true,
     }),
   );

@@ -11,7 +11,11 @@ let io: Server;
 export function initializeSocket(httpServer: HttpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: ["http://localhost:5173", "http://localhost:3000"],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://pulse-board-3r5r.onrender.com/",
+      ],
       credentials: true,
     },
   });
