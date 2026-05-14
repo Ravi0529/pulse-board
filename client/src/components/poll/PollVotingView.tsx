@@ -20,7 +20,6 @@ interface PollVotingViewProps {
 }
 
 export function PollVotingView({
-  analytics,
   isSubmitting,
   onSelectOption,
   onSubmit,
@@ -53,10 +52,6 @@ export function PollVotingView({
 
       <CardContent className="space-y-10 px-4 pb-6 sm:px-6">
         {poll.questions.map((question, index) => {
-          const analyticsQuestion = analytics
-            ? analytics.questions.find((aq) => aq.questionId === question.id)
-            : undefined
-
           return (
             <div
               key={question.id}
@@ -76,14 +71,6 @@ export function PollVotingView({
 
               <div className="mt-5 grid gap-3">
                 {question.options.map((option) => {
-                  const analyticsVotes = analyticsQuestion
-                    ? analyticsQuestion.options.find(
-                        (ao) => ao.optionId === option.id,
-                      )?.votes
-                    : undefined
-
-                  const liveVoteCount = analyticsVotes
-
                   return (
                     <button
                       key={option.id}
@@ -99,10 +86,6 @@ export function PollVotingView({
                         <div>
                           <p className="text-base font-medium text-white">
                             {option.text}
-                          </p>
-                          <p className="mt-2 text-sm text-zinc-400">
-                            {liveVoteCount} vote
-                            {liveVoteCount === 1 ? '' : 's'}
                           </p>
                         </div>
                         {votes[question.id] === option.id ? (
